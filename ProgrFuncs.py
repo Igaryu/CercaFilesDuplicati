@@ -86,8 +86,8 @@ def LetturaNodo():
 	DirExists = 0
 	SN = ''
 
-	SN = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [S/n] ")
-	if SN=='n' or SN=='N':
+	SN = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/N] ")
+	if SN=='n' or SN=='N' or SN=='':
 		DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 		DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 	else:
@@ -99,7 +99,7 @@ def LetturaNodo():
 
 	print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{NumFiles}') 
 	print('Per ogni file va calcolato il rispettivo hash md5!')
-	print('\nOgni trattino corrisponde a 100 files elaborati...\n\n')
+	print('\nOgni trattino corrisponde a 50 files elaborati...\n\n')
 
 	wIndice = 0
 	for filename in find_files(DefDirToScan, '*'):
@@ -131,9 +131,6 @@ def NormalizzazioneDati():
 	su record lavorati e duplicati trovati.
 	'''
 
-	import os, sqlite3, fnmatch, sys
-	from pathlib import Path
-	from hashlib import md5
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
@@ -160,7 +157,7 @@ def NormalizzazioneDati():
 				#print(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
 				db.execute(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
 		db.commit()
-		if ((NumRead % 100) == 0):
+		if ((NumRead % 50) == 0):
 			sys.stdout.write('-')
 			sys.stdout.flush()
 
@@ -168,28 +165,24 @@ def NormalizzazioneDati():
 	NumRead=0
 	for i in db.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
 		NumRead += 1
-		db.execute(f'delete from Duplicati where indiceSrc!={i[0]} and md5="{i[2]}";')
+		for k in db.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
+			db.execute(f'delete from Duplicati where indiceSrc!={i[0]} and md5="{k[2]}";')
+		
 		if (( NumRead % 50 ) == 0 ):
 			sys.stdout.write('-')
 			sys.stdout.flush()	
-
+ 
 	db.commit()	
 
 
 	db.close()
-	print(f"\n\nI = {i[0]} e K = {k[0]} e totali duplicati = {NumRead}.")
-
-
+	print(f'\n\nRecord totali: {k[0]}, normalizzati: {i[0]}, duplicati rimasti: {NumRead}')
 
 def ReportDati():
 	'''
 	Apre il file cdf.sqlite3
 	Verifica se esistono dati nella tabella Duplicati.
 	'''
-
-	import os, sqlite3, fnmatch, sys
-	from pathlib import Path
-	from hashlib import md5
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
@@ -209,11 +202,11 @@ def ReportDati():
 
 	logFile = open('CercaFileDuplicati.log', 'w') 
 	i1=0
-	for i in db.execute("select * from Duplicati;"): 
+	for i in db.execute("select * from Duplicati order by indiceSrc;"): 
 		i1 = i[1]
-		print(f'Il file {i[4]} è duplicato in:')
-		logFile.write(f'Il file {i[4]} è duplicato in:\n')
-		for k in db.execute(f"select * from Duplicati where indiceSrc={i1};"): 
+		print(f'Il file {i[3]} è duplicato in:')
+		logFile.write(f'Il file {i[3]} è duplicato in:\n')
+		for k in db.execute(f"select * from Duplicati where indiceSrc={i1} order by percorsoSrc;"): 
 			print(f'\t\t --> {k[4]} ')
 			logFile.write(f'\t\t --> {k[4]} \n')
 		
