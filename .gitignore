@@ -1,0 +1,9 @@
+.DS_Store
+*go
+paramtest.py
+pyvenv.cfg
+cfd.sqlite3
+bin
+lib
+include
+
