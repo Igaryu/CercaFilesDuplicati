@@ -1,5 +1,6 @@
 .DS_Store
 *go
+*log
 paramtest.py
 pyvenv.cfg
 cfd.sqlite3
