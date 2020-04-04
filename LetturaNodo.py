@@ -80,7 +80,7 @@ DirExists = 0
 SN = ''
 
 SN = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/n] ")
-if SN in 'nN':
+if SN=='n' or SN=='N:
 	DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 	DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 else:

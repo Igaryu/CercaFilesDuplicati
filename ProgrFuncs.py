@@ -1,65 +1,62 @@
 #!/usr/bin/env python3
-from os import system, name
+import sqlite3, fnmatch, sys, os
+
+from pathlib import Path
+from hashlib import md5
+
+
+
 def cls():
-	if name == 'posix':
-		system('clear')
+	if os.name == 'posix':
+		os.system('clear')
 	else:
-		system('cls')#!/usr/bin/env python3
+		os.system('cls')#!/usr/bin/env python3
+
+
+def is_numeric(i):
+	''' Ritorna True se il parametro è numerico '''
+	try:
+		float(i)
+		return True
+	except ValueError:
+		return False
+
+def find_files(directory, pattern):
+	for root, dirs, files in os.walk(directory):
+		for basename in files:
+			if fnmatch.fnmatch(basename, pattern):
+				filename = os.path.join(root, basename)
+				yield filename
+
+
+def check_DirToScan(HomeDir,DirToScan):
+	''' 
+	Se il parametro esistee, come percorso assoluto, lo restituisce; 
+	altrimenti verifica se esiste come percorso relativo alla $HOME e, se si,
+	resistuisce il paramentro anteposto dal contenuto di $HOME.
+
+	Se non sono vere nessuna delle due situazioni, segnala l'inesitenza della
+	directory ed esce con un error code -9
+	
+	:param HomeDir Cartella home dell'utente
+	:param DirToScan Cartella segnalata dall'utente come oggetto della scansione
+
+	:return percorso assoluto se lo è altrimenti restituisce la somma dei due paramentri 
+	'''	
+
+	if (os.path.exists(DirToScan) is True):
+		return(DirToScan)
+	
+	
+	if (os.path.exists(HomeDir+'/'+DirToScan) is True):
+		return(HomeDir+'/'+DirToScan)
+	else:
+		print("Directory inesistente !!!")
+		exit(-9)
+
 
 
 def LetturaNodo():
-	import os, sqlite3, fnmatch, sys
-	from pathlib import Path
-	from hashlib import md5
-
-	def is_numeric(i):
-		''' Ritorna True se il parametro è numerico '''
-		try:
-			float(i)
-			return True
-		except ValueError:
-			return False
-
-	def find_files(directory, pattern):
-		for root, dirs, files in os.walk(directory):
-			for basename in files:
-				if fnmatch.fnmatch(basename, pattern):
-					filename = os.path.join(root, basename)
-					yield filename
-
-	
-
-	def check_DirToScan(HomeDir,DirToScan):
-		''' 
-		Se il parametro esistee, come percorso assoluto, lo restituisce; 
-
-		altrimenti verifica se esiste come percorso relativo alla $HOME e, se si,
-		resistuisce il paramentro anteposto dal contenuto di $HOME.
-
-		Se non sono vere nessuna delle due situazioni, segnala l'inesitenza della
-		directory ed esce con un error code -9
-	
-		:param HomeDir Cartella home dell'utente
-		:param DirToScan Cartella segnalata dall'utente come oggetto della scansione
-
-		:return percorso assoluto se lo è altrimenti restituisce la somma dei due paramentri 
-		'''	
-
-		if (os.path.exists(DirToScan) is True):
-			return(DirToScan)
-	
-	
-		if (os.path.exists(HomeDir+'/'+DirToScan) is True):
-			return(HomeDir+'/'+DirToScan)
-		else:
-			print("Directory inesistente !!!")
-			exit(-9)
-	
-
-
-#######################################
-## Fine area funzioni
-#######################################
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: lo creo...")
@@ -89,8 +86,8 @@ def LetturaNodo():
 	DirExists = 0
 	SN = ''
 
-	SN = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/n] ")
-	if SN in 'nN':
+	SN = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [S/n] ")
+	if SN=='n' or SN=='N':
 		DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 		DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 	else:
@@ -152,7 +149,7 @@ def NormalizzazioneDati():
 
 	nrec=nrec[0]
 	dd=0
-	print(f"Numero di record presenti nella tabella Sorgente: {nrec}.")
+	print(f"\nNumero di record presenti nella tabella Sorgente: {nrec}.")
 	NumRead=0
 	for i in db.execute("select * from Sorgente;"): 
 		NumRead += 1
