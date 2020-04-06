@@ -115,9 +115,6 @@ def LetturaNodo():
 	db.close()
 	print()
 
-	print("\nIl file cfd.sqlite3 è presente nella cartella /tmp; puoi usarlo da li o copiarlo dove ti fa più comodo.\n\n")
-
-
 
 def NormalizzazioneDati():
 	'''
@@ -131,7 +128,7 @@ def NormalizzazioneDati():
 	su record lavorati e duplicati trovati.
 	'''
 
-
+	cls()
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
 		input("Premi [INVIO] per terminare.")
@@ -146,7 +143,8 @@ def NormalizzazioneDati():
 
 	nrec=nrec[0]
 	dd=0
-	print(f"\nNumero di record presenti nella tabella Sorgente: {nrec}.")
+	print("Avvio procedura di verifica dei duplicati...\n")
+	print(f"\nNumero di record presenti nella tabella Sorgente: {nrec}.\n")
 	NumRead=0
 	for i in db.execute("select * from Sorgente;"): 
 		NumRead += 1
@@ -164,7 +162,7 @@ def NormalizzazioneDati():
 	print('\n\nNomralizzo tavola Duplicati...')
 	NumRead=0
 	for i in db.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
-		NumRead += 1
+		NumRead = NumRead + 1
 		for k in db.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
 			db.execute(f'delete from Duplicati where indiceSrc!={i[0]} and md5="{k[2]}";')
 		
@@ -173,16 +171,25 @@ def NormalizzazioneDati():
 			sys.stdout.flush()	
  
 	db.commit()	
-
+	
+	for y in db.execute("select count(*) from Duplicati;"):
+		pass
+	
 
 	db.close()
-	print(f'\n\nRecord totali: {k[0]}, normalizzati: {i[0]}, duplicati rimasti: {NumRead}')
+	print(f'\n\nRecord totali: {k[0]}, normalizzati: {i[0]}, duplicati rimasti: {y[0]}')
+	if y[0] == 0:
+		print("\nNessun duplicato presente!! Termine elaborazione.\n")
+		db.close()
+		sys.exit(-3)
 
 def ReportDati():
 	'''
 	Apre il file cdf.sqlite3
 	Verifica se esistono dati nella tabella Duplicati.
 	'''
+
+	cls()
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
@@ -193,25 +200,33 @@ def ReportDati():
 	for nrec in  db.execute("select count(*) from Duplicati;"): 
 		pass 
 
-	if (nrec[0] ==0 ):
-		print('Tavola Duplicati vuota: devi esegure una scansione prima!!')
+	if (nrec[0] == 0 ):
+		print('\nTavola Duplicati vuota: Non risultano file duplicati in seguito alla scansione!!\n')
 		db.close()
 		sys.exit(-1)
 
 	print(f'\nCi sono {nrec[0]} elementi nella tavola Duplicati...\n')
-
+	RSN=input('Il report verrà prodotto nel file CercaFileDuplicati.log; vuoi anche il reporto a video? [s/N]').upper()
 	logFile = open('CercaFileDuplicati.log', 'w') 
 	i1=0
 	for i in db.execute("select * from Duplicati order by indiceSrc;"): 
 		i1 = i[1]
-		print(f'Il file {i[3]} è duplicato in:')
+		if RSN=='S':
+			print(f'Il file {i[3]} è duplicato in:')
 		logFile.write(f'Il file {i[3]} è duplicato in:\n')
-		for k in db.execute(f"select * from Duplicati where indiceSrc={i1} order by percorsoSrc;"): 
-			print(f'\t\t --> {k[4]} ')
-			logFile.write(f'\t\t --> {k[4]} \n')
+		for k in db.execute(f"select * from Duplicati where indiceSrc={i1} order by percorsoSrc;"):
+			if RSN=='S': 
+				print(f'\t\t --> {k[4]} ')
+				logFile.write(f'\t\t --> {k[4]} \n')
+			else:
+				logFile.write(f'\t\t --> {k[4]} \n')
 		
-		print('\n')
+		if RSN=='S':
+			print('\n')
+
 		logFile.write('\n')	
 
 	db.close()
 	logFile.close()
+
+	print("\nProcedura di report dati eseguita!! Il rapporto sitrova nel file CercaFileDuplicati.log nella cartella da cui hai lanciato lo script.\n")
