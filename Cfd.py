@@ -3,6 +3,7 @@ import sqlite3, fnmatch, sys, os
 
 from pathlib import Path
 from hashlib import md5
+from progress.bar import Bar
 
 
 
@@ -102,6 +103,7 @@ def LetturaNodo():
 	print('\nOgni trattino corrisponde a 50 files elaborati...\n\n')
 
 	wIndice = 0
+	bar = Bar('Scansione in corso', max=int(NumFiles))
 	for filename in find_files(DefDirToScan, '*'):
 #		wPercorso=filename
 		wMd5 = md5(Path(filename).read_bytes()).hexdigest()
@@ -111,7 +113,8 @@ def LetturaNodo():
 			sys.stdout.flush()
 		curs.execute(f'INSERT INTO Sorgente VALUES ({wIndice},"{wMd5}","{filename}");')
 		db.commit()
-
+		bar.next()
+	bar.finish()
 	db.close()
 	print()
 
@@ -146,6 +149,7 @@ def NormalizzazioneDati():
 	print("Avvio procedura di verifica dei duplicati...\n")
 	print(f"\nNumero di record presenti nella tabella Sorgente: {nrec}.\n")
 	NumRead=0
+	bar = Bar('Scansione in corso:', max=nrec)
 	for i in db.execute("select * from Sorgente;"): 
 		NumRead += 1
 		for k in db.execute("select * from Sorgente;"): 
@@ -153,11 +157,13 @@ def NormalizzazioneDati():
 			if (i[1] == k[1]) and (i[0] != k[0]):
 				dd += 1
 				#print(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
-				db.execute(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
+				db.execute(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");')	
 		db.commit()
-		if ((NumRead % 50) == 0):
-			sys.stdout.write('-')
-			sys.stdout.flush()
+		bar.next()
+	bar.finish()
+#		if ((NumRead % 50) == 0):
+#			sys.stdout.write('-')
+#			sys.stdout.flush()
 
 	print('\n\nNomralizzo tavola Duplicati...')
 	NumRead=0
