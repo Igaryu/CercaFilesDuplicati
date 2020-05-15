@@ -4,6 +4,7 @@ import sqlite3, fnmatch, sys, os
 from pathlib import Path
 from hashlib import md5
 from progress.bar import Bar
+from pyfiglet import Figlet
 
 
 
@@ -58,6 +59,8 @@ def check_DirToScan(HomeDir,DirToScan):
 
 
 def LetturaNodo():
+	global figLet
+	print( figLet.renderText('Cerca file Diplicati...'))
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: lo creo...")
@@ -132,6 +135,9 @@ def NormalizzazioneDati():
 	'''
 
 	cls()
+	global figLet
+	print( figLet.renderText('Cerca file Diplicati...'))
+	
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
 		input("Premi [INVIO] per terminare.")
@@ -251,6 +257,9 @@ def ReportDati():
 cls()
 
 #input("Premi [INVIO] per avviare la procedura di scansione della cartella... ")
+figLet = Figlet(font='slant')
+#print (figLet.renderText('Cerca file Diplicati...'))
+
 LetturaNodo()
 print("Scansione cartella eseguita!!\n")
 input("Premi [INVIO] per avviare la procedura di Normalizazione dei dati... ")
