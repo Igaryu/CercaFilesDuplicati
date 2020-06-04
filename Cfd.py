@@ -31,7 +31,7 @@ def find_files(directory, pattern):
 				yield filename
 
 
-def check_DirToScan(HomeDir,DirToScan):
+def check_DirToScan(HomeDir, DirToScan):
 	''' 
 	Se il parametro esistee, come percorso assoluto, lo restituisce; 
 	altrimenti verifica se esiste come percorso relativo alla $HOME e, se si,
@@ -46,12 +46,12 @@ def check_DirToScan(HomeDir,DirToScan):
 	:return percorso assoluto se lo è altrimenti restituisce la somma dei due paramentri 
 	'''	
 
-	if (os.path.exists(DirToScan) is True):
-		return(DirToScan)
+	if os.path.exists(DirToScan) is True:
+		return DirToScan
 	
 	
-	if (os.path.exists(HomeDir+'/'+DirToScan) is True):
-		return(HomeDir+'/'+DirToScan)
+	if os.path.exists(HomeDir+'/'+DirToScan) is True:
+		return HomeDir+'/'+DirToScan
 	else:
 		print("Directory inesistente !!!")
 		exit(-9)
@@ -93,9 +93,9 @@ def LetturaNodo():
 	SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/N] ")
 	if SiNo in 'SnNn' or SiNo == '':
 		DirToScan = input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
-		DefDirToScan = check_DirToScan(HomeDir,DirToScan)
+		DefDirToScan = check_DirToScan(HomeDir, DirToScan)
 	else:
-		DefDirToScan = check_DirToScan(HomeDir,CurDir)
+		DefDirToScan = check_DirToScan(HomeDir, CurDir)
 
 	cursore = dataBase.cursor()
 
@@ -105,12 +105,12 @@ def LetturaNodo():
 	print('Per ogni file va calcolato il rispettivo hash md5!')
 	
 	tmpIndice = 0
-	bar = Bar('Scansione in corso', max = int(numeroFiles))
+	bar = Bar('Scansione in corso', max=int(numeroFiles))
 	for filename in find_files(DefDirToScan, '*'):
 #		wPercorso=filename
 		tmpMd5 = md5(Path(filename).read_bytes()).hexdigest()
 		tmpIndice += 1
-		if (( tmpIndice % 50 ) == 0 ):
+		if (tmpIndice%50) == 0 :
 			sys.stdout.write('-')
 			sys.stdout.flush()
 		cursore.execute(f'INSERT INTO Sorgente VALUES ({tmpIndice},"{tmpMd5}","{filename}");')
@@ -135,7 +135,7 @@ def NormalizzazioneDati():
 
 	cls()
 	global figLet
-	print( figLet.renderText('Cerca file Diplicati...'))
+	print(figLet.renderText('Cerca file Diplicati...'))
 	
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
@@ -154,7 +154,7 @@ def NormalizzazioneDati():
 	print("Avvio procedura di verifica dei duplicati...\n")
 	print(f"\nNumero di record presenti nella tabella Sorgente: {numeroRecord}.\n")
 	numeroLetto = 0
-	bar = Bar('Scansione in corso:', max = numeroRecord)
+	bar = Bar('Scansione in corso:', max=numeroRecord)
 	for elementoSelezionatoEsterno in dataBase.execute("select * from Sorgente;"): 
 		numeroLetto += 1
 		for elementoSelezionatoInterno in dataBase.execute("select * from Sorgente;"): 
@@ -177,7 +177,7 @@ def NormalizzazioneDati():
 		for elementoSelezionatoInterno in dataBase.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
 			dataBase.execute(f'delete from Duplicati where indiceSrc!={elementoSelezionatoEsterno[0]} and md5="{elementoSelezionatoInterno[2]}";')
 		
-		if (( numeroLetto % 50 ) == 0 ):
+		if (( numeroLetto%50 ) == 0 ):
 			sys.stdout.write('-')
 			sys.stdout.flush()	
  
