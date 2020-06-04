@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+def cls():
+	if name == 'posix':
+		system('clear')
+	else:
+		system('cls')
+
 def LetturaNodo():
 	import os, sqlite3, fnmatch, sys
 	from pathlib import Path
@@ -111,8 +118,3 @@ def LetturaNodo():
 
 	print("\nIl file cfd.sqlite3 è presente nella cartella /tmp; puoi usarlo da li o copiarlo dove ti fa più comodo.\n\n")
 
-def cls():
-	if name == 'posix':
-		system('clear')
-	else:
-		system('cls')
