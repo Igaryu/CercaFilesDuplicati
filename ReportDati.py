@@ -13,26 +13,26 @@ if os.path.exists("/tmp/cfd.sqlite3") is False:
 	input("Premi [INVIO] per terminare.")
 	sys.exit(-9)
 
-db=sqlite3.connect("/tmp/cfd.sqlite3")
-for nrec in  db.execute("select count(*) from Duplicati;"): 
+Database=sqlite3.connect("/tmp/cfd.sqlite3")
+for numeroRecord in dataBase.execute("select count(*) from Duplicati;"): 
 	pass 
 
-if (nrec[0] ==0 ):
+if (numeroRecord[0] ==0 ):
 	print('Tavola Duplicati vuota: devi esegure una scansione prima!!')
-	db.close()
+	dataBase.close()
 	sys.exit(-1)
 
-print(f'\nCi sono {nrec[0]} elementi nella tavola Duplicati...\n')
+print(f'\nCi sono {numeroRecord[0]} elementi nella tavola Duplicati...\n')
 
 logFile = open('CercaFileDuplicati.log', 'w') 
-i1=0
-for i in db.execute("select * from Duplicati;"): 
-	i1 = i[1]
-	print(f'Il file {i[4]} è duplicato in:')
-	logFile.write(f'Il file {i[4]} è duplicato in:\n')
-	for k in db.execute(f"select * from Duplicati where indiceSrc={i1};"): 
-		print(f'\t\t --> {k[4]} ')
-		logFile.write(f'\t\t --> {k[4]} \n')
+duplicato=0
+for elementoSelezionatoEsterno in db.execute("select * from Duplicati;"): 
+	duplicato = elementoSelezionatoEsterno[1]
+	print(f'Il file {elementoSelezionatoEsterno[4]} è duplicato in:')
+	logFile.write(f'Il file {elementoSelezionatoEsterno[4]} è duplicato in:\n')
+	for elementoSelezionatoInterno in db.execute(f"select * from Duplicati where indiceSrc={duplicato};"): 
+		print(f'\t\t --> {elementoSelezionatoInterno[4]} ')
+		logFile.write(f'\t\t --> {elementoSelezionatoInterno[4]} \n')
 		
 	print('\n')
 	logFile.write('\n')	

@@ -3,7 +3,7 @@ import os, sqlite3, fnmatch, sys
 from pathlib import Path
 from hashlib import md5
 
-def is_numeric(i):
+def e_un_numero(i):
 	''' Ritorna True se il parametro è numerico '''
 	try:
 		float(i)
@@ -11,7 +11,7 @@ def is_numeric(i):
 	except ValueError:
 		return False
 
-def find_files(directory, pattern):
+def trova_files(directory, pattern):
     for root, dirs, files in os.walk(directory):
         for basename in files:
             if fnmatch.fnmatch(basename, pattern):
@@ -35,11 +35,11 @@ def check_DirToScan(HomeDir,DirToScan):
 	:return percorso assoluto se lo è altrimenti restituisce la somma dei due paramentri 
 	'''
 
-	if (os.path.exists(DirToScan) is True):
+	if os.path.exists(DirToScan) is True:
 		return(DirToScan)
 	
 	
-	if (os.path.exists(HomeDir+'/'+DirToScan) is True):
+	if os.path.exists(HomeDir+'/'+DirToScan) is True:
 		return(HomeDir+'/'+DirToScan)
 	else:
 		print("Directory inesistente !!!")
@@ -77,10 +77,10 @@ CurDir=os.getcwd()
 HomeDir= os.environ['HOME']
 DirToScan = ''
 DirExists = 0
-SN = ''
+SiNo = ''
 
-SN = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/n] ")
-if SN == 'n' or SN == 'N':
+SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/n] ")
+if SiNo in 'nN':
 	DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 	DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 else:
@@ -88,28 +88,28 @@ else:
 
 curs=db.cursor()
 
-NumFiles=os.popen(f'find {DefDirToScan} -type f | wc -l').read()
+NumberOfFiles=os.popen(f'find {DefDirToScan} -type f | wc -l').read()
 
-print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{NumFiles}') 
+print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{NumberOfFiles}') 
 print('Per ogni file va calcolato il rispettivo hash md5!')
 print('\nOgni trattino corrisponde a 100 files elaborati...\n\n')
 
-wIndice = 0
-for filename in find_files(DefDirToScan, '*'):
+tmpIndice = 0
+for filename in trova_files(DefDirToScan, '*'):
 #	wPercorso=filename
-	wMd5 = md5(Path(filename).read_bytes()).hexdigest()
-	wIndice += 1
-	if (( wIndice % 50 ) == 0 ):
+	tmpMd5 = md5(Path(filename).read_bytes()).hexdigest()
+	tmpIndice += 1
+	if (( tmpIndice % 50 ) == 0 ):
 		sys.stdout.write('-')
 		sys.stdout.flush()
-	curs.execute(f'INSERT INTO Sorgente VALUES ({wIndice},"{wMd5}","{filename}");')
+	curs.execute(f'INSERT INTO Sorgente VALUES ({tmpIndice},"{tmpMd5}","{filename}");')
 	db.commit()
 
 db.close()
 print()
 
-SN = input("\n\nCancello il file database di lavoro da /tmp? [s/n]")
-if SN in 'sS':
+SiNo = input("\n\nCancello il file database di lavoro da /tmp? [s/n]")
+if SiNo in 'sS':
 	os.remove("/tmp/cfd.sqlite3")
 	print("\nIl file cfd.sqlite3 è stato cancellato dalla cartella /tmp.\n")
 else:

@@ -64,23 +64,23 @@ def LetturaNodo():
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: lo creo...")
-		db=sqlite3.connect("/tmp/cfd.sqlite3")
-		db.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
-		db.execute('''CREATE INDEX indSrcIndice on Sorgente(indice ASC)''')
-		db.execute('''CREATE INDEX indMd5 on Sorgente(md5 ASC)''')	
+		dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+		dataBase.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
+		dataBase.execute('''CREATE INDEX indSrcIndice on Sorgente(indice ASC)''')
+		dataBase.execute('''CREATE INDEX indMd5 on Sorgente(md5 ASC)''')	
 
-		db.execute('''CREATE TABLE Duplicati (md5 TEXT, indiceSrc NUMERIC, indiceDest NUMERIC,percorsoSrc TEXT, percorsoDest TEXT)''')
-		db.execute('''CREATE INDEX indiceMd5 on Duplicati(md5 ASC)''')	
-		db.execute('''CREATE INDEX indiceSrc on Duplicati(indiceSrc ASC)''')	
-		db.execute('''CREATE INDEX indiceDest on Duplicati(indiceDest ASC)''')	
-		db.commit()
+		dataBase.execute('''CREATE TABLE Duplicati (md5 TEXT, indiceSrc NUMERIC, indiceDest NUMERIC,percorsoSrc TEXT, percorsoDest TEXT)''')
+		dataBase.execute('''CREATE INDEX indiceMd5 on Duplicati(md5 ASC)''')	
+		dataBase.execute('''CREATE INDEX indiceSrc on Duplicati(indiceSrc ASC)''')	
+		dataBase.execute('''CREATE INDEX indiceDest on Duplicati(indiceDest ASC)''')	
+		dataBase.commit()
 		print("\n\nDatabase cdf.sqlite3 creato!\n\n")
 	else:
 		print("\n\nDatabase cdf.sqlite3 esistente: lo apro...")
-		db=sqlite3.connect("/tmp/cfd.sqlite3")
-		db.execute("delete from Sorgente;")
-		db.execute("delete from Duplicati;")
-		db.commit()
+		dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+		dataBase.execute("delete from Sorgente;")
+		dataBase.execute("delete from Duplicati;")
+		dataBase.commit()
 		print("Database cdf.sqlite3 aperto e pulito!\n\n")
 
 
@@ -88,37 +88,37 @@ def LetturaNodo():
 	HomeDir= os.environ['HOME']
 	DirToScan = ''
 	DirExists = 0
-	SN = ''
+	SiNo = ''
 
-	SN = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/N] ")
-	if SN=='n' or SN=='N' or SN=='':
+	SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/N] ")
+	if SiNo in 'SnNn' or SiNo = '':
 		DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 		DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 	else:
 		DefDirToScan = check_DirToScan(HomeDir,CurDir)
 
-	curs=db.cursor()
+	cursore=dataBase.cursor()
 
-	NumFiles=os.popen(f'find {DefDirToScan} -type f | wc -l').read()
+	numeroFiles=os.popen(f'find {DefDirToScan} -type f | wc -l').read()
 
-	print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{NumFiles}') 
+	print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{numeroFiles}') 
 	print('Per ogni file va calcolato il rispettivo hash md5!')
 	print('\nOgni trattino corrisponde a 50 files elaborati...\n\n')
 
-	wIndice = 0
-	bar = Bar('Scansione in corso', max=int(NumFiles))
+	tmpIndice = 0
+	bar = Bar('Scansione in corso', max=int(numeroFiles))
 	for filename in find_files(DefDirToScan, '*'):
 #		wPercorso=filename
-		wMd5 = md5(Path(filename).read_bytes()).hexdigest()
-		wIndice += 1
-		if (( wIndice % 50 ) == 0 ):
+		tmpMd5 = md5(Path(filename).read_bytes()).hexdigest()
+		tmpIndice += 1
+		if (( tmpIndice % 50 ) == 0 ):
 			sys.stdout.write('-')
 			sys.stdout.flush()
-		curs.execute(f'INSERT INTO Sorgente VALUES ({wIndice},"{wMd5}","{filename}");')
-		db.commit()
+		cursore.execute(f'INSERT INTO Sorgente VALUES ({tmpIndice},"{tmpMd5}","{filename}");')
+		dataBase.commit()
 		bar.next()
 	bar.finish()
-	db.close()
+	dataBase.close()
 	print()
 
 
@@ -143,56 +143,56 @@ def NormalizzazioneDati():
 		input("Premi [INVIO] per terminare.")
 		sys.exit(-9)
 
-	db=sqlite3.connect("/tmp/cfd.sqlite3")
-	db.execute("delete from Duplicati;")
-	db.commit()
+	dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+	dataBase.execute("delete from Duplicati;")
+	dataBase.commit()
 
-	for nrec in  db.execute("select count(*) from Sorgente;"): 
+	for numeroRecord in  dataBase.execute("select count(*) from Sorgente;"): 
 		pass 
 
-	nrec=nrec[0]
-	dd=0
+	numeroRecord=numeroRecord[0]
+	numeroDiRecord=0
 	print("Avvio procedura di verifica dei duplicati...\n")
-	print(f"\nNumero di record presenti nella tabella Sorgente: {nrec}.\n")
-	NumRead=0
-	bar = Bar('Scansione in corso:', max=nrec)
-	for i in db.execute("select * from Sorgente;"): 
-		NumRead += 1
-		for k in db.execute("select * from Sorgente;"): 
+	print(f"\nNumero di record presenti nella tabella Sorgente: {numeroRecord}.\n")
+	numeroLetto=0
+	bar = Bar('Scansione in corso:', max=numeroRecord)
+	for elementoSelezionatoEsterno in dataBase.execute("select * from Sorgente;"): 
+		numeroLetto += 1
+		for elementoSelezionatoInterno in dataBase.execute("select * from Sorgente;"): 
 			#print(i[0],i[1],"\t\t",k[0],k[1])
-			if (i[1] == k[1]) and (i[0] != k[0]):
-				dd += 1
+			if (elementoSelezionatoEsterno[1] == elementoSelezionatoInterno[1]) and (elementoSelezionatoEsterno[0] != elementoSelezionatoInterno[0]):
+				numeroDiRecord += 1
 				#print(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
-				db.execute(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");')	
-		db.commit()
+				dataBase.execute(f'insert into Duplicati values ("{elementoSelezionatoEsterno[1]}", {elementoSelezionatoEsterno[0]}, {elementoSelezionatoInterno[0]}, "{elementoSelezionatoEsterno[2]}","{elementoSelezionatoInterno[2]}");')	
+		dataBase.commit()
 		bar.next()
 	bar.finish()
-#		if ((NumRead % 50) == 0):
+#		if ((numeroLetto % 50) == 0):
 #			sys.stdout.write('-')
 #			sys.stdout.flush()
 
 	print('\n\nNomralizzo tavola Duplicati...')
-	NumRead=0
-	for i in db.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
-		NumRead = NumRead + 1
-		for k in db.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
-			db.execute(f'delete from Duplicati where indiceSrc!={i[0]} and md5="{k[2]}";')
+	numeroLetto=0
+	for elementoSelezionatoEsterno in dataBase.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
+		numeroLetto = numeroLetto + 1
+		for elementoSelezionatoInterno in dataBase.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
+			dataBase.execute(f'delete from Duplicati where indiceSrc!={elementoSelezionatoEsterno[0]} and md5="{elementoSelezionatoInterno[2]}";')
 		
-		if (( NumRead % 50 ) == 0 ):
+		if (( numeroLetto % 50 ) == 0 ):
 			sys.stdout.write('-')
 			sys.stdout.flush()	
  
-	db.commit()	
+	dataBase.commit()	
 	
-	for y in db.execute("select count(*) from Duplicati;"):
+	for numeroRecord in dataBase.execute("select count(*) from Duplicati;"):
 		pass
 	
+	dataBase.close()
 
-	db.close()
-	print(f'\n\nRecord totali: {k[0]}, normalizzati: {i[0]}, duplicati rimasti: {y[0]}')
-	if y[0] == 0:
+	print(f'\n\numeroRecordord totali: {elementoSelezionatoInterno[0]}, normalizzati: {elementoSelezionatoEsterno[0]}, duplicati rimasti: {numeroRecord[0]}')
+	if numeroRecord[0] == 0:
 		print("\nNessun duplicato presente!! Termine elaborazione.\n")
-		db.close()
+		dataBase.close()
 		sys.exit(-3)
 
 def ReportDati():
@@ -208,37 +208,37 @@ def ReportDati():
 		input("Premi [INVIO] per terminare.")
 		sys.exit(-9)
 
-	db=sqlite3.connect("/tmp/cfd.sqlite3")
-	for nrec in  db.execute("select count(*) from Duplicati;"): 
+	dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+	for numeroRecord in  dataBase.execute("select count(*) from Duplicati;"): 
 		pass 
 
-	if (nrec[0] == 0 ):
+	if (numeroRecord[0] == 0 ):
 		print('\nTavola Duplicati vuota: Non risultano file duplicati in seguito alla scansione!!\n')
-		db.close()
+		dataBase.close()
 		sys.exit(-1)
 
-	print(f'\nCi sono {nrec[0]} elementi nella tavola Duplicati...\n')
-	RSN=input('Il report verrà prodotto nel file CercaFileDuplicati.log; vuoi anche il reporto a video? [s/N]').upper()
+	print(f'\nCi sono {numeroRecord[0]} elementi nella tavola Duplicati...\n')
+	SiNo=input('Il report verrà prodotto nel file CercaFileDuplicati.log; vuoi anche il reporto a video? [s/N]').upper()
 	logFile = open('CercaFileDuplicati.log', 'w') 
-	i1=0
-	for i in db.execute("select * from Duplicati order by indiceSrc;"): 
-		i1 = i[1]
-		if RSN=='S':
-			print(f'Il file {i[3]} è duplicato in:')
+	rigaAttuale=0
+	for elementoSelezionatoEsterno in dataBase.execute("select * from Duplicati order by indiceSrc;"): 
+		rigaAttuale = elementoSelezionatoEsterno[1]
+		if SiNo == 'S':
+			print(f'Il file {elementoSelezionatoEsterno[3]} è duplicato in:')
 		logFile.write(f'Il file {i[3]} è duplicato in:\n')
-		for k in db.execute(f"select * from Duplicati where indiceSrc={i1} order by percorsoSrc;"):
-			if RSN=='S': 
-				print(f'\t\t --> {k[4]} ')
-				logFile.write(f'\t\t --> {k[4]} \n')
+		for elementoSelezionatoInterno in dataBase.execute(f"select * from Duplicati where indiceSrc={rigaAttuale} order by percorsoSrc;"):
+			if SiNo == 'S': 
+				print(f'\t\t --> {elementoSelezionatoInterno[4]} ')
+				logFile.write(f'\t\t --> {elementoSelezionatoInterno[4]} \n')
 			else:
-				logFile.write(f'\t\t --> {k[4]} \n')
+				logFile.write(f'\t\t --> {elementoSelezionatoInterno[4]} \n')
 		
-		if RSN=='S':
+		if SiNo == 'S':
 			print('\n')
 
 		logFile.write('\n')	
 
-	db.close()
+	dataBase.close()
 	logFile.close()
 
 	print("\nProcedura di report dati eseguita!! Il rapporto sitrova nel file CercaFileDuplicati.log nella cartella da cui hai lanciato lo script.\n")
@@ -267,9 +267,9 @@ NormalizzazioneDati()
 print("\nNormalizzazione dati eseguita!!\n")
 input("Premi [INVIO] per avviare la procedura Rapporto dati in CercaFilesDuplicati.log...")
 ReportDati()
-SN=input("Il file cfd.sqlite3 è presente nella cartella /tmp vuoi cancellarlo? [s/N]: ").upper()
+SiNo = input("Il file cfd.sqlite3 è presente nella cartella /tmp vuoi cancellarlo? [s/N]: ").upper()
 
-if SN == "S":
+if SiNo == "S":
 	os.popen("rm /tmp/cfd.sqlite3")
 	print("\nFile database /tmp/sqlite3 cancellato!!\n\n")
 else:

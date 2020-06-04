@@ -19,44 +19,44 @@ if os.path.exists("/tmp/cfd.sqlite3") is False:
 	input("Premi [INVIO] per terminare.")
 	sys.exit(-9)
 
-db=sqlite3.connect("/tmp/cfd.sqlite3")
-db.execute("delete from Duplicati;")
-db.commit()
+dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+dataBase.execute("delete from Duplicati;")
+dataBase.commit()
 
-for nrec in  db.execute("select count(*) from Sorgente;"): 
+for numeroRecord in  dataBase.execute("select count(*) from Sorgente;"): 
 	pass 
 
-nrec=nrec[0]
-dd=0
-print(f"Numero di record presenti nella tabella Sorgente: {nrec}.")
-NumRead=0
-for i in db.execute("select * from Sorgente;"): 
-	NumRead += 1
-	for k in db.execute("select * from Sorgente;"): 
+numeroRecord=numeroRecord[0]
+contatore=0
+print(f"Numero di record presenti nella tabella Sorgente: {numeroRecord}.")
+NumeroLetture=0
+for elementoSelezionatoEsterno in dataBase.execute("select * from Sorgente;"): 
+	NumeroLetture += 1
+	for elementoSelezionatoInterno in dataBase.execute("select * from Sorgente;"): 
 		#print(i[0],i[1],"\t\t",k[0],k[1])
-		if (i[1] == k[1]) and (i[0] != k[0]):
-			dd += 1
+		if (elementoSelezionatoEsterno[1] == elementoSelezionatoInterno[1]) and (elementoSelezionatoEsterno[0] != elementoSelezionatoInterno[0]):
+			contatore += 1
 			#print(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
-			db.execute(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
-	db.commit()
-	if ((NumRead % 100) == 0):
+			dataBase.execute(f'insert into Duplicati values ("{elementoSelezionatoEsterno[1]}", {elementoSelezionatoEsterno[0]}, {elementoSelezionatoInterno[0]}, "{elementoSelezionatoEsterno[2]}","{elementoSelezionatoInterno[2]}");') 
+	dataBase.commit()
+	if ((NumeroLetture % 100) == 0):
 		sys.stdout.write('-')
 		sys.stdout.flush()
 
 print('\n\nNomralizzo tavola Duplicati...')
-NumRead=0
-for i in db.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
-	NumRead += 1
-	db.execute(f'delete from Duplicati where indiceSrc!={i[0]} and md5="{i[2]}";')
-	if (( NumRead % 50 ) == 0 ):
+rigaAttuale=0
+for elementoSelezionato in dataBase.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
+	rigaAttuale += 1
+	dataBase.execute(f'delete from Duplicati where indiceSrc!={elementoSelezionato[0]} and md5="{elementoSelezionato[2]}";')
+	if (( NumeroLetture % 50 ) == 0 ):
 		sys.stdout.write('-')
 		sys.stdout.flush()	
 
-db.commit()	
+dataBase.commit()	
 
 
-db.close()
-print(f"\n\nI = {i[0]} e K = {k[0]} e totali duplicati = {NumRead}.")
+dataBase.close()
+print(f"\n\nI = {elementoSelezionatoEsterno[0]} e K = {elementoSelezionatoInterno[0]} e totali duplicati = {rigaAttuale}.")
 
 
 

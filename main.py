@@ -13,9 +13,9 @@ NormalizzazioneDati()
 print("\nNormalizzazione dati eseguita!!\n")
 input("Premi [INVIO] per avviare la procedura Rapporto dati in CercaFilesDuplicati.log...")
 ReportDati()
-SN=input("Il file cfd.sqlite3 è presente nella cartella /tmp vuoi cancellarlo? [s/N]: ").upper()
+SiNo = input("Il file cfd.sqlite3 è presente nella cartella /tmp vuoi cancellarlo? [s/N]: ").upper()
 
-if SN == "S":
+if SiNo == "S":
 	os.popen("rm /tmp/cfd.sqlite3")
 	print("\nFile database /tmp/sqlite3 cancellato!!\n\n")
 else:
