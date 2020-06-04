@@ -91,7 +91,7 @@ def LetturaNodo():
 	SiNo = ''
 
 	SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/N] ")
-	if SiNo in 'SnNn' or SiNo = '':
+	if SiNo in 'SnNn' or SiNo == '':
 		DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 		DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 	else:
@@ -103,8 +103,7 @@ def LetturaNodo():
 
 	print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{numeroFiles}') 
 	print('Per ogni file va calcolato il rispettivo hash md5!')
-	print('\nOgni trattino corrisponde a 50 files elaborati...\n\n')
-
+	
 	tmpIndice = 0
 	bar = Bar('Scansione in corso', max=int(numeroFiles))
 	for filename in find_files(DefDirToScan, '*'):
@@ -225,7 +224,7 @@ def ReportDati():
 		rigaAttuale = elementoSelezionatoEsterno[1]
 		if SiNo == 'S':
 			print(f'Il file {elementoSelezionatoEsterno[3]} è duplicato in:')
-		logFile.write(f'Il file {i[3]} è duplicato in:\n')
+		logFile.write(f'Il file {elementoSelezionatoEsterno[3]} è duplicato in:\n')
 		for elementoSelezionatoInterno in dataBase.execute(f"select * from Duplicati where indiceSrc={rigaAttuale} order by percorsoSrc;"):
 			if SiNo == 'S': 
 				print(f'\t\t --> {elementoSelezionatoInterno[4]} ')
