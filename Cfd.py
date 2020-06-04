@@ -64,7 +64,7 @@ def LetturaNodo():
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: lo creo...")
-		dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+		dataBase = sqlite3.connect("/tmp/cfd.sqlite3")
 		dataBase.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
 		dataBase.execute('''CREATE INDEX indSrcIndice on Sorgente(indice ASC)''')
 		dataBase.execute('''CREATE INDEX indMd5 on Sorgente(md5 ASC)''')	
@@ -77,35 +77,35 @@ def LetturaNodo():
 		print("\n\nDatabase cdf.sqlite3 creato!\n\n")
 	else:
 		print("\n\nDatabase cdf.sqlite3 esistente: lo apro...")
-		dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+		dataBase = sqlite3.connect("/tmp/cfd.sqlite3")
 		dataBase.execute("delete from Sorgente;")
 		dataBase.execute("delete from Duplicati;")
 		dataBase.commit()
 		print("Database cdf.sqlite3 aperto e pulito!\n\n")
 
 
-	CurDir=os.getcwd()	
-	HomeDir= os.environ['HOME']
+	CurDir = os.getcwd()	
+	HomeDir = os.environ['HOME']
 	DirToScan = ''
 	DirExists = 0
 	SiNo = ''
 
 	SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/N] ")
 	if SiNo in 'SnNn' or SiNo == '':
-		DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
+		DirToScan = input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 		DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 	else:
 		DefDirToScan = check_DirToScan(HomeDir,CurDir)
 
-	cursore=dataBase.cursor()
+	cursore = dataBase.cursor()
 
-	numeroFiles=os.popen(f'find {DefDirToScan} -type f | wc -l').read()
+	numeroFiles = os.popen(f'find {DefDirToScan} -type f | wc -l').read()
 
 	print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{numeroFiles}') 
 	print('Per ogni file va calcolato il rispettivo hash md5!')
 	
 	tmpIndice = 0
-	bar = Bar('Scansione in corso', max=int(numeroFiles))
+	bar = Bar('Scansione in corso', max = int(numeroFiles))
 	for filename in find_files(DefDirToScan, '*'):
 #		wPercorso=filename
 		tmpMd5 = md5(Path(filename).read_bytes()).hexdigest()
@@ -142,19 +142,19 @@ def NormalizzazioneDati():
 		input("Premi [INVIO] per terminare.")
 		sys.exit(-9)
 
-	dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+	dataBase = sqlite3.connect("/tmp/cfd.sqlite3")
 	dataBase.execute("delete from Duplicati;")
 	dataBase.commit()
 
 	for numeroRecord in  dataBase.execute("select count(*) from Sorgente;"): 
 		pass 
 
-	numeroRecord=numeroRecord[0]
-	numeroDiRecord=0
+	numeroRecord = numeroRecord[0]
+	numeroDiRecord = 0
 	print("Avvio procedura di verifica dei duplicati...\n")
 	print(f"\nNumero di record presenti nella tabella Sorgente: {numeroRecord}.\n")
-	numeroLetto=0
-	bar = Bar('Scansione in corso:', max=numeroRecord)
+	numeroLetto = 0
+	bar = Bar('Scansione in corso:', max = numeroRecord)
 	for elementoSelezionatoEsterno in dataBase.execute("select * from Sorgente;"): 
 		numeroLetto += 1
 		for elementoSelezionatoInterno in dataBase.execute("select * from Sorgente;"): 
@@ -171,7 +171,7 @@ def NormalizzazioneDati():
 #			sys.stdout.flush()
 
 	print('\n\nNomralizzo tavola Duplicati...')
-	numeroLetto=0
+	numeroLetto = 0
 	for elementoSelezionatoEsterno in dataBase.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
 		numeroLetto = numeroLetto + 1
 		for elementoSelezionatoInterno in dataBase.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
@@ -207,7 +207,7 @@ def ReportDati():
 		input("Premi [INVIO] per terminare.")
 		sys.exit(-9)
 
-	dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+	dataBase = sqlite3.connect("/tmp/cfd.sqlite3")
 	for numeroRecord in  dataBase.execute("select count(*) from Duplicati;"): 
 		pass 
 
@@ -217,9 +217,9 @@ def ReportDati():
 		sys.exit(-1)
 
 	print(f'\nCi sono {numeroRecord[0]} elementi nella tavola Duplicati...\n')
-	SiNo=input('Il report verrà prodotto nel file CercaFileDuplicati.log; vuoi anche il reporto a video? [s/N]').upper()
+	SiNo = input('Il report verrà prodotto nel file CercaFileDuplicati.log; vuoi anche il reporto a video? [s/N]').upper()
 	logFile = open('CercaFileDuplicati.log', 'w') 
-	rigaAttuale=0
+	rigaAttuale = 0
 	for elementoSelezionatoEsterno in dataBase.execute("select * from Duplicati order by indiceSrc;"): 
 		rigaAttuale = elementoSelezionatoEsterno[1]
 		if SiNo == 'S':
@@ -256,7 +256,7 @@ def ReportDati():
 cls()
 
 #input("Premi [INVIO] per avviare la procedura di scansione della cartella... ")
-figLet = Figlet(font='slant')
+figLet = Figlet(font = 'slant')
 #print (figLet.renderText('Cerca file Diplicati...'))
 
 LetturaNodo()
