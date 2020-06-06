@@ -60,16 +60,17 @@ def check_DirToScan(HomeDir, DirToScan):
 
 def LetturaNodo():
 	global figLet
-	print( figLet.renderText('Cerca file Diplicati...'))
+	print( figLet.renderText('C.F.D.\nScansione Cartella'))
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: lo creo...")
 		dataBase = sqlite3.connect("/tmp/cfd.sqlite3")
-		dataBase.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
+		dataBase.execute('''CREATE TABLE Sorgente (indice INTEGER NOT NULL, md5 TEXT NOT NULL, percorso TEXT NOT NULL, PRIMARY KEY(indice ASC))''')
+#		dataBase.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
 		dataBase.execute('''CREATE INDEX indSrcIndice on Sorgente(indice ASC)''')
 		dataBase.execute('''CREATE INDEX indMd5 on Sorgente(md5 ASC)''')	
 
-		dataBase.execute('''CREATE TABLE Duplicati (md5 TEXT, indiceSrc NUMERIC, indiceDest NUMERIC,percorsoSrc TEXT, percorsoDest TEXT)''')
+		dataBase.execute('''CREATE TABLE Duplicati (md5 TEXT NOT NULL, indiceSrc NUMERIC NOT NULL, indiceDest NUMERIC NOT NULL, percorsoSrc TEXT NOT NULL, percorsoDest TEXT NOT NULL)''')
 		dataBase.execute('''CREATE INDEX indiceMd5 on Duplicati(md5 ASC)''')	
 		dataBase.execute('''CREATE INDEX indiceSrc on Duplicati(indiceSrc ASC)''')	
 		dataBase.execute('''CREATE INDEX indiceDest on Duplicati(indiceDest ASC)''')	
@@ -107,7 +108,6 @@ def LetturaNodo():
 	tmpIndice = 0
 	bar = Bar('Scansione in corso', max=int(numeroFiles))
 	for filename in find_files(DefDirToScan, '*'):
-#		wPercorso=filename
 		tmpMd5 = md5(Path(filename).read_bytes()).hexdigest()
 		tmpIndice += 1
 		if (tmpIndice%50) == 0 :
@@ -135,7 +135,7 @@ def NormalizzazioneDati():
 
 	cls()
 	global figLet
-	print(figLet.renderText('Cerca file Diplicati...'))
+	print(figLet.renderText('C.F.D.\nNormalizazione dati...'))
 	
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
@@ -158,17 +158,12 @@ def NormalizzazioneDati():
 	for elementoSelezionatoEsterno in dataBase.execute("select * from Sorgente;"): 
 		numeroLetto += 1
 		for elementoSelezionatoInterno in dataBase.execute("select * from Sorgente;"): 
-			#print(i[0],i[1],"\t\t",k[0],k[1])
 			if (elementoSelezionatoEsterno[1] == elementoSelezionatoInterno[1]) and (elementoSelezionatoEsterno[0] != elementoSelezionatoInterno[0]):
 				numeroDiRecord += 1
-				#print(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
 				dataBase.execute(f'insert into Duplicati values ("{elementoSelezionatoEsterno[1]}", {elementoSelezionatoEsterno[0]}, {elementoSelezionatoInterno[0]}, "{elementoSelezionatoEsterno[2]}","{elementoSelezionatoInterno[2]}");')	
 		dataBase.commit()
 		bar.next()
 	bar.finish()
-#		if ((numeroLetto % 50) == 0):
-#			sys.stdout.write('-')
-#			sys.stdout.flush()
 
 	print('\n\nNomralizzo tavola Duplicati...')
 	numeroLetto = 0
@@ -188,7 +183,7 @@ def NormalizzazioneDati():
 	
 	dataBase.close()
 
-	print(f'\n\numeroRecordord totali: {elementoSelezionatoInterno[0]}, normalizzati: {elementoSelezionatoEsterno[0]}, duplicati rimasti: {numeroRecord[0]}')
+	print(f'\n\nNumeroRecordord totali: {elementoSelezionatoInterno[0]}, normalizzati: {elementoSelezionatoEsterno[0]}, duplicati rimasti: {numeroRecord[0]}')
 	if numeroRecord[0] == 0:
 		print("\nNessun duplicato presente!! Termine elaborazione.\n")
 		dataBase.close()
@@ -201,6 +196,8 @@ def ReportDati():
 	'''
 
 	cls()
+	global figLet
+	print(figLet.renderText('C.F.D.\nReport Dati...'))
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
@@ -224,13 +221,14 @@ def ReportDati():
 		rigaAttuale = elementoSelezionatoEsterno[1]
 		if SiNo == 'S':
 			print(f'Il file {elementoSelezionatoEsterno[3]} è duplicato in:')
+	
 		logFile.write(f'Il file {elementoSelezionatoEsterno[3]} è duplicato in:\n')
+	
 		for elementoSelezionatoInterno in dataBase.execute(f"select * from Duplicati where indiceSrc={rigaAttuale} order by percorsoSrc;"):
 			if SiNo == 'S': 
 				print(f'\t\t --> {elementoSelezionatoInterno[4]} ')
-				logFile.write(f'\t\t --> {elementoSelezionatoInterno[4]} \n')
-			else:
-				logFile.write(f'\t\t --> {elementoSelezionatoInterno[4]} \n')
+	
+			logFile.write(f'\t\t --> {elementoSelezionatoInterno[4]} \n')
 		
 		if SiNo == 'S':
 			print('\n')
@@ -251,13 +249,9 @@ def ReportDati():
 
 
 
-#!/usr/bin/env python3
-
 cls()
 
-#input("Premi [INVIO] per avviare la procedura di scansione della cartella... ")
 figLet = Figlet(font = 'slant')
-#print (figLet.renderText('Cerca file Diplicati...'))
 
 LetturaNodo()
 print("Scansione cartella eseguita!!\n")
@@ -266,6 +260,7 @@ NormalizzazioneDati()
 print("\nNormalizzazione dati eseguita!!\n")
 input("Premi [INVIO] per avviare la procedura Rapporto dati in CercaFilesDuplicati.log...")
 ReportDati()
+
 SiNo = input("Il file cfd.sqlite3 è presente nella cartella /tmp vuoi cancellarlo? [s/N]: ").upper()
 
 if SiNo == "S":
