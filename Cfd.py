@@ -12,7 +12,7 @@ def cls():
 	if os.name == 'posix':
 		os.system('clear')
 	else:
-		os.system('cls')#!/usr/bin/env python3
+		os.system('cls')
 
 
 def is_numeric(i):
@@ -49,14 +49,11 @@ def check_DirToScan(HomeDir, DirToScan):
 	if os.path.exists(DirToScan) is True:
 		return DirToScan
 	
-	
 	if os.path.exists(HomeDir+'/'+DirToScan) is True:
 		return HomeDir+'/'+DirToScan
 	else:
 		print("Directory inesistente !!!")
 		exit(-9)
-
-
 
 def LetturaNodo():
 	global figLet
@@ -66,7 +63,6 @@ def LetturaNodo():
 		print("\n\nDatabase cdf.sqlite3 inesistente: lo creo...")
 		dataBase = sqlite3.connect("/tmp/cfd.sqlite3")
 		dataBase.execute('''CREATE TABLE Sorgente (indice INTEGER NOT NULL, md5 TEXT NOT NULL, percorso TEXT NOT NULL, PRIMARY KEY(indice ASC))''')
-#		dataBase.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
 		dataBase.execute('''CREATE INDEX indSrcIndice on Sorgente(indice ASC)''')
 		dataBase.execute('''CREATE INDEX indMd5 on Sorgente(md5 ASC)''')	
 
@@ -91,35 +87,37 @@ def LetturaNodo():
 	DirExists = 0
 	SiNo = ''
 
-	SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/N] ")
-	if SiNo in 'SnNn' or SiNo == '':
+	SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/N] ").upper()
+	if SiNo in 'SN' or SiNo == '':
 		DirToScan = input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 		DefDirToScan = check_DirToScan(HomeDir, DirToScan)
 	else:
 		DefDirToScan = check_DirToScan(HomeDir, CurDir)
 
 	cursore = dataBase.cursor()
-
 	numeroFiles = os.popen(f'find {DefDirToScan} -type f | wc -l').read()
 
 	print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{numeroFiles}') 
 	print('Per ogni file va calcolato il rispettivo hash md5!')
-	
+
 	tmpIndice = 0
 	bar = Bar('Scansione in corso', max=int(numeroFiles))
+
 	for filename in find_files(DefDirToScan, '*'):
+
 		tmpMd5 = md5(Path(filename).read_bytes()).hexdigest()
 		tmpIndice += 1
+
 		if (tmpIndice%50) == 0 :
 			sys.stdout.write('-')
 			sys.stdout.flush()
 		cursore.execute(f'INSERT INTO Sorgente VALUES ({tmpIndice},"{tmpMd5}","{filename}");')
 		dataBase.commit()
 		bar.next()
+
 	bar.finish()
 	dataBase.close()
 	print()
-
 
 def NormalizzazioneDati():
 	'''
@@ -148,12 +146,14 @@ def NormalizzazioneDati():
 
 	for numeroRecord in  dataBase.execute("select count(*) from Sorgente;"): 
 		pass 
-
 	numeroRecord = numeroRecord[0]
+
 	numeroDiRecord = 0
+	numeroLetto = 0
+	
 	print("Avvio procedura di verifica dei duplicati...\n")
 	print(f"\nNumero di record presenti nella tabella Sorgente: {numeroRecord}.\n")
-	numeroLetto = 0
+
 	bar = Bar('Scansione in corso:', max=numeroRecord)
 	for elementoSelezionatoEsterno in dataBase.execute("select * from Sorgente;"): 
 		numeroLetto += 1
@@ -216,18 +216,17 @@ def ReportDati():
 	print(f'\nCi sono {numeroRecord[0]} elementi nella tavola Duplicati...\n')
 	SiNo = input('Il report verrà prodotto nel file CercaFileDuplicati.log; vuoi anche il reporto a video? [s/N]').upper()
 	logFile = open('CercaFileDuplicati.log', 'w') 
+	
 	rigaAttuale = 0
 	for elementoSelezionatoEsterno in dataBase.execute("select * from Duplicati order by indiceSrc;"): 
 		rigaAttuale = elementoSelezionatoEsterno[1]
 		if SiNo == 'S':
 			print(f'Il file {elementoSelezionatoEsterno[3]} è duplicato in:')
-	
 		logFile.write(f'Il file {elementoSelezionatoEsterno[3]} è duplicato in:\n')
 	
 		for elementoSelezionatoInterno in dataBase.execute(f"select * from Duplicati where indiceSrc={rigaAttuale} order by percorsoSrc;"):
 			if SiNo == 'S': 
 				print(f'\t\t --> {elementoSelezionatoInterno[4]} ')
-	
 			logFile.write(f'\t\t --> {elementoSelezionatoInterno[4]} \n')
 		
 		if SiNo == 'S':
@@ -245,10 +244,6 @@ def ReportDati():
 # Fine Area Funzioni
 #
 ####################################################################
-
-
-
-
 cls()
 
 figLet = Figlet(font = 'slant')
@@ -256,9 +251,11 @@ figLet = Figlet(font = 'slant')
 LetturaNodo()
 print("Scansione cartella eseguita!!\n")
 input("Premi [INVIO] per avviare la procedura di Normalizazione dei dati... ")
+
 NormalizzazioneDati()
 print("\nNormalizzazione dati eseguita!!\n")
 input("Premi [INVIO] per avviare la procedura Rapporto dati in CercaFilesDuplicati.log...")
+
 ReportDati()
 
 SiNo = input("Il file cfd.sqlite3 è presente nella cartella /tmp vuoi cancellarlo? [s/N]: ").upper()
@@ -268,6 +265,3 @@ if SiNo == "S":
 	print("\nFile database /tmp/sqlite3 cancellato!!\n\n")
 else:
 	print("\nIl file cfd.sqlite3 è presente nella cartella /tmp; puoi usarlo da li o copiarlo dove ti fa più comodo.\n\n")
-
-
-
