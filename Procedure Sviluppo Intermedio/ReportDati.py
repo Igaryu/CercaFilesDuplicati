@@ -9,33 +9,33 @@ from pathlib import Path
 from hashlib import md5
 
 if os.path.exists("/tmp/cfd.sqlite3") is False:
-	print("\n\nDatabase cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
+	print("\n\ndata_base cdf.sqlite3 inesistente: deve essere stato creato e scansionato prima di eseguire una visualizzazione!")
 	input("Premi [INVIO] per terminare.")
 	sys.exit(-9)
 
-Database=sqlite3.connect("/tmp/cfd.sqlite3")
-for numeroRecord in dataBase.execute("select count(*) from Duplicati;"): 
+data_base=sqlite3.connect("/tmp/cfd.sqlite3")
+for numero_record in data_base.execute("select count(*) from Duplicati;"): 
 	pass 
 
-if (numeroRecord[0] ==0 ):
+if (numero_record[0] ==0 ):
 	print('Tavola Duplicati vuota: devi esegure una scansione prima!!')
-	dataBase.close()
+	data_base.close()
 	sys.exit(-1)
 
-print(f'\nCi sono {numeroRecord[0]} elementi nella tavola Duplicati...\n')
+print(f'\nCi sono {numero_record[0]} elementi nella tavola Duplicati...\n')
 
-logFile = open('CercaFileDuplicati.log', 'w') 
+log_file = open('CercaFileDuplicati.log', 'w') 
 duplicato=0
-for elementoSelezionatoEsterno in db.execute("select * from Duplicati;"): 
-	duplicato = elementoSelezionatoEsterno[1]
-	print(f'Il file {elementoSelezionatoEsterno[4]} è duplicato in:')
-	logFile.write(f'Il file {elementoSelezionatoEsterno[4]} è duplicato in:\n')
-	for elementoSelezionatoInterno in db.execute(f"select * from Duplicati where indiceSrc={duplicato};"): 
-		print(f'\t\t --> {elementoSelezionatoInterno[4]} ')
-		logFile.write(f'\t\t --> {elementoSelezionatoInterno[4]} \n')
+for elemento_selezionato_esterno in db.execute("select * from Duplicati;"): 
+	duplicato = elemento_selezionato_esterno[1]
+	print(f'Il file {elemento_selezionato_esterno[4]} è duplicato in:')
+	log_file.write(f'Il file {elemento_selezionato_esterno[4]} è duplicato in:\n')
+	for elemento_selezionato_interno in db.execute(f"select * from Duplicati where indiceSrc={duplicato};"): 
+		print(f'\t\t --> {elemento_selezionato_interno[4]} ')
+		log_file.write(f'\t\t --> {elemento_selezionato_interno[4]} \n')
 		
 	print('\n')
-	logFile.write('\n')	
+	log_file.write('\n')	
 
-db.close()
-logFile.close()
+data_base.close()
+log_file.close()

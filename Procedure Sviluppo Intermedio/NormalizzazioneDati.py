@@ -19,44 +19,44 @@ if os.path.exists("/tmp/cfd.sqlite3") is False:
 	input("Premi [INVIO] per terminare.")
 	sys.exit(-9)
 
-dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
-dataBase.execute("delete from Duplicati;")
-dataBase.commit()
+data_base = sqlite3.connect("/tmp/cfd.sqlite3")
+data_base.execute("delete from Duplicati;")
+data_base.commit()
 
-for numeroRecord in  dataBase.execute("select count(*) from Sorgente;"): 
+for numero_record in  data_base.execute("select count(*) from Sorgente;"): 
 	pass 
 
-numeroRecord=numeroRecord[0]
-contatore=0
-print(f"Numero di record presenti nella tabella Sorgente: {numeroRecord}.")
-NumeroLetture=0
-for elementoSelezionatoEsterno in dataBase.execute("select * from Sorgente;"): 
-	NumeroLetture += 1
-	for elementoSelezionatoInterno in dataBase.execute("select * from Sorgente;"): 
+numero_record = numero_record[0]
+contatore = 0
+print(f"Numero di record presenti nella tabella Sorgente: {numero_record}.")
+numero_letture = 0
+for  elemento_selezionato_esterno in data_base.execute("select * from Sorgente;"): 
+	numero_letture += 1
+	for  elemento_selezionato_interno in data_base.execute("select * from Sorgente;"): 
 		#print(i[0],i[1],"\t\t",k[0],k[1])
-		if (elementoSelezionatoEsterno[1] == elementoSelezionatoInterno[1]) and (elementoSelezionatoEsterno[0] != elementoSelezionatoInterno[0]):
+		if ( elemento_selezionato_esterno[1] ==  elemento_selezionato_interno[1]) and ( elemento_selezionato_esterno[0] !=  elemento_selezionato_interno[0]):
 			contatore += 1
 			#print(f'insert into Duplicati values ("{i[1]}", {i[0]}, {k[0]}, "{i[2]}","{k[2]}");') 
-			dataBase.execute(f'insert into Duplicati values ("{elementoSelezionatoEsterno[1]}", {elementoSelezionatoEsterno[0]}, {elementoSelezionatoInterno[0]}, "{elementoSelezionatoEsterno[2]}","{elementoSelezionatoInterno[2]}");') 
-	dataBase.commit()
-	if ((NumeroLetture % 100) == 0):
+			data_base.execute(f'insert into Duplicati values ("{ elemento_selezionato_esterno[1]}", { elemento_selezionato_esterno[0]}, { elemento_selezionato_interno[0]}, "{ elemento_selezionato_esterno[2]}","{ elemento_selezionato_interno[2]}");') 
+	data_base.commit()
+	if ((numero_letture % 100) == 0):
 		sys.stdout.write('-')
 		sys.stdout.flush()
 
 print('\n\nNomralizzo tavola Duplicati...')
-rigaAttuale=0
-for elementoSelezionato in dataBase.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
+rigaAttuale = 0
+for elemento_selezionato in data_base.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
 	rigaAttuale += 1
-	dataBase.execute(f'delete from Duplicati where indiceSrc!={elementoSelezionato[0]} and md5="{elementoSelezionato[2]}";')
-	if (( NumeroLetture % 50 ) == 0 ):
+	data_base.execute(f'delete from Duplicati where indiceSrc!={elemento_selezionato[0]} and md5="{elemento_selezionato[2]}";')
+	if (( numero_letture % 50 ) == 0 ):
 		sys.stdout.write('-')
 		sys.stdout.flush()	
 
-dataBase.commit()	
+data_base.commit()	
 
 
-dataBase.close()
-print(f"\n\nI = {elementoSelezionatoEsterno[0]} e K = {elementoSelezionatoInterno[0]} e totali duplicati = {rigaAttuale}.")
+data_base.close()
+print(f"\n\nI = { elemento_selezionato_esterno[0]} e K = { elemento_selezionato_interno[0]} e totali duplicati = {rigaAttuale}.")
 
 
 

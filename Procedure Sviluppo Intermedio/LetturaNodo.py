@@ -53,42 +53,42 @@ def check_DirToScan(HomeDir,DirToScan):
 
 if os.path.exists("/tmp/cfd.sqlite3") is False:
 	print("\n\nDatabase cdf.sqlite3 inesistente: lo creo...")
-	db=sqlite3.connect("/tmp/cfd.sqlite3")
-	db.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
-	db.execute('''CREATE INDEX indSrcIndice on Sorgente(indice ASC)''')
-	db.execute('''CREATE INDEX indMd5 on Sorgente(md5 ASC)''')
+	data_base = sqlite3.connect("/tmp/cfd.sqlite3")
+	data_base.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
+	data_base.execute('''CREATE INDEX indSrcIndice on Sorgente(indice ASC)''')
+	data_base.execute('''CREATE INDEX indMd5 on Sorgente(md5 ASC)''')
 
-	db.execute('''CREATE TABLE Duplicati (md5 TEXT, indiceSrc NUMERIC, indiceDest NUMERIC,percorsoSrc TEXT, percorsoDest TEXT)''')
-	db.execute('''CREATE INDEX indiceMd5 on Duplicati(md5 ASC)''')	
-	db.execute('''CREATE INDEX indiceSrc on Duplicati(indiceSrc ASC)''')	
-	db.execute('''CREATE INDEX indiceDest on Duplicati(indiceDest ASC)''')	
-	db.commit()
+	data_base.execute('''CREATE TABLE Duplicati (md5 TEXT, indiceSrc NUMERIC, indiceDest NUMERIC,percorsoSrc TEXT, percorsoDest TEXT)''')
+	data_base.execute('''CREATE INDEX indiceMd5 on Duplicati(md5 ASC)''')	
+	data_base.execute('''CREATE INDEX indiceSrc on Duplicati(indiceSrc ASC)''')	
+	data_base.execute('''CREATE INDEX indiceDest on Duplicati(indiceDest ASC)''')	
+	data_base.commit()
 	print("\n\nDatabase cdf.sqlite3 creato!\n\n")
 else:
 	print("\n\nDatabase cdf.sqlite3 esistente: lo apro...")
-	db=sqlite3.connect("/tmp/cfd.sqlite3")
-	db.execute("delete from Sorgente;")
-	db.execute("delete from Duplicati;")
-	db.commit()
+	data_base = sqlite3.connect("/tmp/cfd.sqlite3")
+	data_base.execute("delete from Sorgente;")
+	data_base.execute("delete from Duplicati;")
+	data_base.commit()
 	print("Database cdf.sqlite3 aperto e pulito!\n\n")
 
 
-CurDir=os.getcwd()
-HomeDir= os.environ['HOME']
+CurDir = os.getcwd()
+HomeDir = os.environ['HOME']
 DirToScan = ''
 DirExists = 0
 SiNo = ''
 
 SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/n] ")
 if SiNo in 'nN':
-	DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
+	DirToScan = input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 	DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 else:
 	DefDirToScan = check_DirToScan(HomeDir,CurDir)
 
-curs=db.cursor()
+cursore = data_base.cursor()
 
-NumberOfFiles=os.popen(f'find {DefDirToScan} -type f | wc -l').read()
+NumberOfFiles = os.popen(f'find {DefDirToScan} -type f | wc -l').read()
 
 print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{NumberOfFiles}') 
 print('Per ogni file va calcolato il rispettivo hash md5!')
@@ -102,10 +102,10 @@ for filename in trova_files(DefDirToScan, '*'):
 	if (( tmpIndice % 50 ) == 0 ):
 		sys.stdout.write('-')
 		sys.stdout.flush()
-	curs.execute(f'INSERT INTO Sorgente VALUES ({tmpIndice},"{tmpMd5}","{filename}");')
-	db.commit()
+	cursore.execute(f'INSERT INTO Sorgente VALUES ({tmpIndice},"{tmpMd5}","{filename}");')
+	data_base.commit()
 
-db.close()
+data_base.close()
 print()
 
 SiNo = input("\n\nCancello il file database di lavoro da /tmp? [s/n]")

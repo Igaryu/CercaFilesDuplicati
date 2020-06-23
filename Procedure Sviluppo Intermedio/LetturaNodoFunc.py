@@ -61,7 +61,7 @@ def LetturaNodo():
 
 	if os.path.exists("/tmp/cfd.sqlite3") is False:
 		print("\n\nDatabase cdf.sqlite3 inesistente: lo creo...")
-		dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+		dataBase = sqlite3.connect("/tmp/cfd.sqlite3")
 		dataBase.execute('''CREATE TABLE Sorgente (indice INTEGER PRIMARY KEY, md5 TEXT, percorso TEST)''')
 		dataBase.execute('''CREATE INDEX indSrcIndice on Sorgente(indice ASC)''')
 		dataBase.execute('''CREATE INDEX indMd5 on Sorgente(md5 ASC)''')	
@@ -74,7 +74,7 @@ def LetturaNodo():
 		print("\n\nDatabase cdf.sqlite3 creato!\n\n")
 	else:
 		print("\n\nDatabase cdf.sqlite3 esistente: lo apro...")
-		dataBase=sqlite3.connect("/tmp/cfd.sqlite3")
+		dataBase = sqlite3.connect("/tmp/cfd.sqlite3")
 		dataBase.execute("delete from Sorgente;")
 		dataBase.execute("delete from Duplicati;")
 		dataBase.commit()
@@ -88,16 +88,16 @@ def LetturaNodo():
 
 	SiNo = input(f"\n\nDevo usare {CurDir} come directory da scansionare? [s/n] ")
 	if SiNo in 'nN':
-		DirToScan=input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
+		DirToScan = input("Digita percorso da scansionare: (è ammesso il path assoluto o relativo rispetto alla propria $HOME)  ")
 		DefDirToScan = check_DirToScan(HomeDir,DirToScan)
 	else:
 		DefDirToScan = check_DirToScan(HomeDir,CurDir)
 
-	cursore=dataBase.cursoreor()
+	cursore = dataBase.cursoreor()
 
-	number_o_files=os.popen(f'find {DefDirToScan} -type f | wc -l').read()
+	number_of_files = os.popen(f'find {DefDirToScan} -type f | wc -l').read()
 
-	print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{number_o_files}') 
+	print(f'\n\nA seconda del numero di files da elaborare può volerci diverso tempo: nel tuo caso i files sono:{number_of_files}') 
 	print('Per ogni file va calcolato il rispettivo hash md5!')
 	print('\nOgni trattino corrisponde a 100 files elaborati...\n\n')
 
