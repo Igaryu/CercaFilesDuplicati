@@ -35,7 +35,7 @@ def is_numeric(i):
     except ValueError:
         return False
 
-def find_files(directory, pattern):
+def find_files(directory: str, pattern: str):
     '''
         Trova tutti i files corrispondenti a PATTERN scandendo la
         struttura DIRECTORY
@@ -47,7 +47,7 @@ def find_files(directory, pattern):
                 yield filename
 
 
-def check_dir_to_scan(home_dir, dir_to_scan):
+def check_dir_to_scan(home_dir: str, dir_to_scan: str):
     '''
     Se il parametro esistee, come percorso assoluto, lo restituisce;
     altrimenti verifica se esiste come percorso relativo alla $HOME e, se si,
@@ -67,10 +67,10 @@ def check_dir_to_scan(home_dir, dir_to_scan):
 
     if os.path.exists(home_dir+'/'+dir_to_scan) is True:
         return home_dir+'/'+dir_to_scan
-    else:
-        print("Directory inesistente !!!")
-        sys.exit(-9)
-        return
+    
+    print("Directory inesistente !!!")
+    sys.exit(-9)
+
 
 def lettura_nodo():
     '''
