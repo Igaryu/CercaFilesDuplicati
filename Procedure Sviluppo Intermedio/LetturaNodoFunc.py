@@ -93,7 +93,7 @@ def LetturaNodo():
 	else:
 		DefDirToScan = check_DirToScan(HomeDir,CurDir)
 
-	cursore = dataBase.cursoreor()
+	cursore = dataBase.cursor()
 
 	number_of_files = os.popen(f'find {DefDirToScan} -type f | wc -l').read()
 
