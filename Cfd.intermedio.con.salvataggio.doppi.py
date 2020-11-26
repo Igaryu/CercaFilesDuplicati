@@ -186,6 +186,10 @@ def normalizzazione_dati():
     for elemento_selezionato_esterno in data_base.execute("select * from Sorgente;"):
         numero_letture += 1
         for elemento_selezionato_interno in data_base.execute("select * from Sorgente;"):
+        #    print(f"MD5SUM[1] est+int: \n\t {elemento_selezionato_esterno[1]} \
+        #           \n\t {elemento_selezionato_interno[1]}")
+        #    print(f"Indice[0] est+int: \n\t {elemento_selezionato_esterno[0]} \
+        #           \n\t {elemento_selezionato_interno[0]}")
             if (elemento_selezionato_esterno[1] == elemento_selezionato_interno[1]) and (elemento_selezionato_esterno[0] != elemento_selezionato_interno[0]):
         #        print(f"MD5SUM[1] est+int: \n\t {elemento_selezionato_esterno[1]} \
         #           \n\t {elemento_selezionato_interno[1]}")
@@ -200,20 +204,23 @@ def normalizzazione_dati():
 
     print('\n\nNomralizzo tavola Duplicati...')
     numero_letture = 0
-    for elemento_selezionato_esterno in data_base.execute("select md5, indice from Sorgente order by md5;"):
+    for elemento_selezionato_esterno in data_base.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
         numero_letture = numero_letture + 1
-#        print(f"{elemento_selezionato_esterno[0]}  {elemento_selezionato_esterno[1]}")
-#        print(f"delete from Sorgente where md5='{elemento_selezionato_esterno[0]}' and indice != {elemento_selezionato_esterno[1]};")
-#        input("Premi un tasto per continuare")
-        data_base.execute(f"delete from Sorgente where md5='{elemento_selezionato_esterno[0]}' and indice != {elemento_selezionato_esterno[1]};")
-        data_base.commit()
+        for elemento_selezionato_interno in data_base.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
+        #    data_base.execute(f'delete from Duplicati where indiceSrc!={elemento_selezionato_esterno[0]} and md5="{elemento_selezionato_interno[2]}";')
+            pass
+        if (numero_letture%50) == 0:
+            sys.stdout.write('-')
+            sys.stdout.flush()
 
-    for numero_record in data_base.execute("select count(*) from Sorgente;"):
+    data_base.commit()
+
+    for numero_record in data_base.execute("select count(*) from Duplicati;"):
         pass
 
     data_base.close()
 
-    print(f'\n\nNumeroRecorord totali: {numero_letture}, normalizzati: {numero_letture}, duplicati rimasti: {numero_record[0]}')
+    print(f'\n\nNumeroRecordord totali: {elemento_selezionato_interno[0]}, normalizzati: {elemento_selezionato_esterno[0]}, duplicati rimasti: {numero_record[0]}')
     if numero_record[0] == 0:
         print("\nNessun duplicato presente!! Termine elaborazione.\n")
         data_base.close()
