@@ -132,13 +132,8 @@ def lettura_nodo():
     bar = Bar('Scansione in corso', max=int(numero_files))
 
     for filename in find_files(def_dir_to_scan, '*'):
-
         tmp_md5 = md5(Path(filename).read_bytes()).hexdigest()
         tmp_indice += 1
-
-        if (tmp_indice%50) == 0:
-            sys.stdout.write('-')
-            sys.stdout.flush()
         cursore.execute(f'INSERT INTO Sorgente VALUES ({tmp_indice},"{tmp_md5}","{filename}");')
         data_base.commit()
         bar.next()
@@ -190,20 +185,10 @@ def normalizzazione_dati():
     for elemento_selezionato_esterno in data_base.execute("select * from Sorgente;"):
         numero_letture += 1
         for elemento_selezionato_interno in data_base.execute("select * from Sorgente;"):
-            #    print(f"MD5SUM[1] est+int: \n\t {elemento_selezionato_esterno[1]} \
-            #           \n\t {elemento_selezionato_interno[1]}")
-            #    print(f"Indice[0] est+int: \n\t {elemento_selezionato_esterno[0]} \
-            #           \n\t {elemento_selezionato_interno[0]}")
             if (elemento_selezionato_esterno[1] == elemento_selezionato_interno[1]) and (elemento_selezionato_esterno[0] != elemento_selezionato_interno[0]):
-                #        print(f"MD5SUM[1] est+int: \n\t {elemento_selezionato_esterno[1]} \
-                #           \n\t {elemento_selezionato_interno[1]}")
-                #        print(f"Indice[0] est+int: \n\t {elemento_selezionato_esterno[0]} \
-                #           \n\t {elemento_selezionato_interno[0]}")
-                #        input("premi un tasto per contniuare")
-                numero_di_record += 1
-                data_base.execute(
-                    f'insert into Duplicati values ("{elemento_selezionato_esterno[1]}", {elemento_selezionato_esterno[0]}, {elemento_selezionato_interno[0]}, "{elemento_selezionato_esterno[2]}","{elemento_selezionato_interno[2]}");')
-                data_base.commit()
+       			numero_di_record += 1
+          		data_base.execute(f'insert into Duplicati values ("{elemento_selezionato_esterno[1]}", {elemento_selezionato_esterno[0]}, {elemento_selezionato_interno[0]}, "{elemento_selezionato_esterno[2]}","{elemento_selezionato_interno[2]}");')
+            data_base.commit()
         barra.next()
     barra.finish()
 
