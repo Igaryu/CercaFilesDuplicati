@@ -132,8 +132,13 @@ def lettura_nodo():
     bar = Bar('Scansione in corso', max=int(numero_files))
 
     for filename in find_files(def_dir_to_scan, '*'):
+
         tmp_md5 = md5(Path(filename).read_bytes()).hexdigest()
         tmp_indice += 1
+
+        if (tmp_indice%50) == 0:
+            sys.stdout.write('-')
+            sys.stdout.flush()
         cursore.execute(f'INSERT INTO Sorgente VALUES ({tmp_indice},"{tmp_md5}","{filename}");')
         data_base.commit()
         bar.next()
@@ -154,10 +159,7 @@ def normalizzazione_dati():
     su record lavorati e duplicati trovati.
     '''
 
-# cls()
-
-
-def normalizzazione_dati():
+    cls()
     global FIGLET
     print(FIGLET.renderText('C.F.D.\nNormalizazione dati...'))
 
@@ -170,7 +172,7 @@ def normalizzazione_dati():
     data_base.execute("delete from Duplicati;")
     data_base.commit()
 
-    for numero_record in data_base.execute("select count(*) from Sorgente;"):
+    for numero_record in  data_base.execute("select count(*) from Sorgente;"):
         pass
     numero_record = numero_record[0]
 
@@ -178,17 +180,25 @@ def normalizzazione_dati():
     numero_letture = 0
 
     print("Avvio procedura di verifica dei duplicati...\n")
-    print(
-        f"\nNumero di record presenti nella tabella Sorgente: {numero_record}.\n")
+    print(f"\nNumero di record presenti nella tabella Sorgente: {numero_record}.\n")
 
     barra = Bar('Scansione in corso:', max=numero_record)
     for elemento_selezionato_esterno in data_base.execute("select * from Sorgente;"):
         numero_letture += 1
         for elemento_selezionato_interno in data_base.execute("select * from Sorgente;"):
+        #    print(f"MD5SUM[1] est+int: \n\t {elemento_selezionato_esterno[1]} \
+        #           \n\t {elemento_selezionato_interno[1]}")
+        #    print(f"Indice[0] est+int: \n\t {elemento_selezionato_esterno[0]} \
+        #           \n\t {elemento_selezionato_interno[0]}")
             if (elemento_selezionato_esterno[1] == elemento_selezionato_interno[1]) and (elemento_selezionato_esterno[0] != elemento_selezionato_interno[0]):
+        #        print(f"MD5SUM[1] est+int: \n\t {elemento_selezionato_esterno[1]} \
+        #           \n\t {elemento_selezionato_interno[1]}")
+        #        print(f"Indice[0] est+int: \n\t {elemento_selezionato_esterno[0]} \
+        #           \n\t {elemento_selezionato_interno[0]}")
+        #        input("premi un tasto per contniuare")
                 numero_di_record += 1
                 data_base.execute(f'insert into Duplicati values ("{elemento_selezionato_esterno[1]}", {elemento_selezionato_esterno[0]}, {elemento_selezionato_interno[0]}, "{elemento_selezionato_esterno[2]}","{elemento_selezionato_interno[2]}");')
-            data_base.commit()
+                data_base.commit()
         barra.next()
     barra.finish()
 
@@ -197,7 +207,11 @@ def normalizzazione_dati():
     for elemento_selezionato_esterno in data_base.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
         numero_letture = numero_letture + 1
         for elemento_selezionato_interno in data_base.execute("select indiceSrc, indiceDest, md5 from Duplicati;"):
-       		data_base.execute(f'delete from Duplicati where indiceDest={elemento_selezionato_esterno[0]};')
+        #    data_base.execute(f'delete from Duplicati where indiceSrc!={elemento_selezionato_esterno[0]} and md5="{elemento_selezionato_interno[2]}";')
+            pass
+        if (numero_letture%50) == 0:
+            sys.stdout.write('-')
+            sys.stdout.flush()
 
     data_base.commit()
 
@@ -206,8 +220,7 @@ def normalizzazione_dati():
 
     data_base.close()
 
-    print(
-        f'\n\nNumeroRecordord totali: {elemento_selezionato_interno[0]}, normalizzati: {elemento_selezionato_esterno[0]}, duplicati rimasti: {numero_record[0]}')
+    print(f'\n\nNumeroRecordord totali: {elemento_selezionato_interno[0]}, normalizzati: {elemento_selezionato_esterno[0]}, duplicati rimasti: {numero_record[0]}')
     if numero_record[0] == 0:
         print("\nNessun duplicato presente!! Termine elaborazione.\n")
         data_base.close()
@@ -215,11 +228,11 @@ def normalizzazione_dati():
 
 def report_dati():
     '''
-    	Apre il file cdf.sqlite3
-    	Verifica se esistono dati nella tabella Duplicati.
+        Apre il file cdf.sqlite3
+        Verifica se esistono dati nella tabella Duplicati.
         Se si chiede all'utente se vuole ANCHE il reporto a video, altrimenti
         lo riporta solo nel file CercaFileDuplicati.log
-	'''
+    '''
 
     cls()
     global FIGLET
