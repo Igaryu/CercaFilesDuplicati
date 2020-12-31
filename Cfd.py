@@ -142,6 +142,7 @@ def lettura_nodo():
     data_base.close()
     print()
 
+
 def normalizzazione_dati():
     '''
     Apre il file cdf.sqlite3
@@ -153,11 +154,7 @@ def normalizzazione_dati():
     A termine ciclo chiude il database e restituisce le statistiche
     su record lavorati e duplicati trovati.
     '''
-
-# cls()
-
-
-def normalizzazione_dati():
+    
     global FIGLET
     print(FIGLET.renderText('C.F.D.\nNormalizazione dati...'))
 
