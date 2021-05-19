@@ -1,0 +1,7 @@
+.git
+bin
+include
+lib
+build
+*.yml
+*.cfg
